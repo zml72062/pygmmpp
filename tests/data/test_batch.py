@@ -45,7 +45,9 @@ def test_batch_collate_1():
     batch: Batch = Batch.from_data_list(data_list)
     assert set(batch.keys()) == {'x', 'edge_index', 'edge_attr', 'y',
                                  'inc_dict', 'cat_dim_dict', 'batch0',
-                                 'ptr0', 'batch_level', 'edge_slice0'}
+                                 'ptr0', 'batch_level', 'edge_slice0',
+                                 'node_feature_set', 'edge_feature_set',
+                                 'edge_index_set', 'graph_feature_set'}
     assert batch.num_nodes == 21
     assert batch.num_edges == 48
     assert batch.num_node_features == 10
@@ -106,7 +108,7 @@ def test_batch_separate_1():
         data1 = batch[i]
         data2 = data_list[i]
         # test `data1 == data2`
-        assert data1.keys() == data2.keys()
+        assert set(data1.keys()) == set(data2.keys())
         for k in data1:
             val1 = data1.__dict__[k]
             val2 = data2.__dict__[k]
@@ -155,7 +157,9 @@ def test_batch_collate_2():
     assert set(batch.keys()) == {'x', 'edge_index', 'edge_attr', 'y',
                                  'inc_dict', 'cat_dim_dict', 'batch0',
                                  'ptr0', 'batch1', 'ptr1', 'batch_level',
-                                 'edge_slice0', 'edge_slice1'}
+                                 'edge_slice0', 'edge_slice1',
+                                 'node_feature_set', 'edge_feature_set',
+                                 'edge_index_set', 'graph_feature_set'}
     assert batch.num_nodes == 21
     assert batch.num_edges == 48
     assert batch.num_node_features == 10

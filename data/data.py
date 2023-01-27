@@ -4,7 +4,6 @@ data.py - Data handling of graphs
 import torch
 import torch_sparse
 import copy
-from .feature import *
 from typing import Optional, Any, Tuple, Callable, Dict
 
 
@@ -22,14 +21,23 @@ class Data:
                  edge_attr: Optional[torch.Tensor] = None,
                  y: Optional[torch.Tensor] = None,
                  **kwargs):
+        self.node_feature_set: set[str] = set()
+        self.edge_feature_set: set[str] = set()
+        self.edge_index_set: set[str] = set()
+        self.graph_feature_set: set[str] = set()
+
         if x is not None:
-            self.x = NodeFeature(x)
+            self.node_feature_set.add('x')
+            self.x = x
         if edge_index is not None:
-            self.edge_index = EdgeIndex(edge_index)
+            self.edge_index_set.add('edge_index')
+            self.edge_index = edge_index
         if edge_attr is not None:
-            self.edge_attr = EdgeFeature(edge_attr)
+            self.edge_feature_set.add('edge_attr')
+            self.edge_attr = edge_attr
         if y is not None:
-            self.y = GraphFeature(y)
+            self.graph_feature_set.add('y')
+            self.y = y
 
         self.batch_level = -1
 
@@ -51,7 +59,8 @@ class Data:
             v = self.__dict__[k]
             if isinstance(v, torch.Tensor):
                 feature_list.append('='.join((k, repr(list(v.shape)))))
-            elif k not in {'batch_level', 'inc_dict', 'cat_dim_dict'}:
+            elif k not in {'batch_level', 'inc_dict', 'cat_dim_dict'} \
+                    and '_set' not in k:
                 feature_list.append('='.join((k, repr(v))))
         return self.__class__.__name__ + '(' + ', '.join(feature_list) + ')'
 
@@ -129,10 +138,11 @@ class Data:
         The `__cat_dim__` tells a dataloader the dimension on which a tensor-type
         graph feature `attr` should be concatenated.
         """
-        val = self.__dict__[attr]
-        if isinstance(val, (NodeFeature, EdgeFeature, GraphFeature)):
+        if attr in set.union(self.node_feature_set,
+                             self.edge_feature_set,
+                             self.graph_feature_set):
             return 0
-        elif isinstance(val, EdgeIndex):
+        elif attr in self.edge_index_set:
             return 1
         return self.cat_dim_dict[attr]
 
@@ -141,10 +151,11 @@ class Data:
         The `__inc__` tells a dataloader the offset to add on a tensor-type graph
         feature `attr`.
         """
-        val = self.__dict__[attr]
-        if isinstance(val, (NodeFeature, EdgeFeature, GraphFeature)):
+        if attr in set.union(self.node_feature_set,
+                             self.edge_feature_set,
+                             self.graph_feature_set):
             return 0
-        elif isinstance(val, EdgeIndex):
+        elif attr in self.edge_index_set:
             return self.num_nodes
         return self.inc_dict[attr]
 
@@ -178,8 +189,8 @@ class Data:
                             type: str,
                             slicing: str,):
         """
-        An extension to `__setattr__`, which allows auto-batching of new 
+        An extension to `__setattr__`, which allows auto-batching of new
         tensor-type attributes.
 
-        `type` should be one of `'node_feature'`, 
+        `type` should be one of `'node_feature'`,
         """

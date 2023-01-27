@@ -3,6 +3,7 @@ collate.py - Defining the default collating function
 """
 from .data import Data
 import torch
+import copy
 from typing import List
 
 
@@ -104,6 +105,9 @@ def collate(cls, data_list: List[Data]):
                 batch.__dict__[key][feature] = sum(
                     [data.__dict__[key][feature] for data in data_list]
                 )
+        elif '_set' in key:
+            batch.__dict__[key] = copy.copy(data_sample.__dict__[key])
+
         # for non-tensor-type graph feature, maintain a list for them
         elif key != 'batch_level':
             batch.__dict__[key] = [data.__dict__[key]

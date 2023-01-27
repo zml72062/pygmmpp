@@ -18,13 +18,19 @@ def test_data_keys():
     name = 'graph01'
     myd = mydata.Data(x, edge_index, edge_attr, y, name=name)
     assert set(myd.keys()) == {'x', 'edge_index', 'edge_attr', 'name', 'y',
-                               'cat_dim_dict', 'inc_dict', 'batch_level'}
+                               'cat_dim_dict', 'inc_dict', 'batch_level',
+                               'node_feature_set', 'edge_feature_set',
+                               'edge_index_set', 'graph_feature_set'}
     del myd.name
     assert set(myd.keys()) == {'x', 'edge_index', 'edge_attr', 'y',
-                               'cat_dim_dict', 'inc_dict', 'batch_level'}
+                               'cat_dim_dict', 'inc_dict', 'batch_level',
+                               'node_feature_set', 'edge_feature_set',
+                               'edge_index_set', 'graph_feature_set'}
     myd.author = 'zml72062'
     assert set(myd.keys()) == {'x', 'edge_index', 'edge_attr', 'y', 'author',
-                               'cat_dim_dict', 'inc_dict', 'batch_level'}
+                               'cat_dim_dict', 'inc_dict', 'batch_level',
+                               'node_feature_set', 'edge_feature_set',
+                               'edge_index_set', 'graph_feature_set'}
 
 
 def test_data_values():
