@@ -26,3 +26,10 @@ class EdgeIndex(torch.Tensor):
     and with `cat_dim=1` and `inc=num_nodes`.
     """
     pass
+
+
+class GraphFeature(torch.Tensor):
+    """
+    A graph feature is a tensor with shape `(1 * num_graph_features)`, and
+    with `cat_dim=0` and `inc=0`.
+    """

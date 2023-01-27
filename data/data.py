@@ -4,6 +4,7 @@ data.py - Data handling of graphs
 import torch
 import torch_sparse
 import copy
+from .feature import *
 from typing import Optional, Any, Tuple, Callable, Dict
 
 
@@ -22,13 +23,13 @@ class Data:
                  y: Optional[torch.Tensor] = None,
                  **kwargs):
         if x is not None:
-            self.x = x
+            self.x = NodeFeature(x)
         if edge_index is not None:
-            self.edge_index = edge_index
+            self.edge_index = EdgeIndex(edge_index)
         if edge_attr is not None:
-            self.edge_attr = edge_attr
+            self.edge_attr = EdgeFeature(edge_attr)
         if y is not None:
-            self.y = y
+            self.y = GraphFeature(y)
 
         self.batch_level = -1
 
@@ -37,24 +38,6 @@ class Data:
         self.inc_dict: Dict[str, int] = {}
 
         self.__dict__.update(kwargs)
-
-        if x is not None:
-            self.cat_dim_dict['x'] = 0
-        if edge_attr is not None:
-            self.cat_dim_dict['edge_attr'] = 0
-        if y is not None:
-            self.cat_dim_dict['y'] = 0
-        if edge_index is not None:
-            self.cat_dim_dict['edge_index'] = 1
-
-        if x is not None:
-            self.inc_dict['x'] = 0
-        if edge_attr is not None:
-            self.inc_dict['edge_attr'] = 0
-        if y is not None:
-            self.inc_dict['y'] = 0
-        if edge_index is not None:
-            self.inc_dict['edge_index'] = self.num_nodes
 
     def __setattr__(self, __name: str, __value: Any) -> None:
         self.__dict__[__name] = __value
@@ -107,7 +90,7 @@ class Data:
         return 0
 
     @property
-    def shape(self) -> Tuple[Optional[int], Optional[int]]:
+    def shape(self) -> Tuple[int, int]:
         """
         Returns the shape of the adjacency matrix.
         """
@@ -146,6 +129,11 @@ class Data:
         The `__cat_dim__` tells a dataloader the dimension on which a tensor-type
         graph feature `attr` should be concatenated.
         """
+        val = self.__dict__[attr]
+        if isinstance(val, (NodeFeature, EdgeFeature, GraphFeature)):
+            return 0
+        elif isinstance(val, EdgeIndex):
+            return 1
         return self.cat_dim_dict[attr]
 
     def __inc__(self, attr: str) -> int:
@@ -153,6 +141,11 @@ class Data:
         The `__inc__` tells a dataloader the offset to add on a tensor-type graph
         feature `attr`.
         """
+        val = self.__dict__[attr]
+        if isinstance(val, (NodeFeature, EdgeFeature, GraphFeature)):
+            return 0
+        elif isinstance(val, EdgeIndex):
+            return self.num_nodes
         return self.inc_dict[attr]
 
     def apply(self, func: Callable) -> "Data":
@@ -179,3 +172,14 @@ class Data:
             if not isinstance(val, torch.Tensor):
                 out.__dict__[k] = copy.copy(val)
         return out
+
+    def __set_tensor_attr__(self, name: str,
+                            value: torch.Tensor,
+                            type: str,
+                            slicing: str,):
+        """
+        An extension to `__setattr__`, which allows auto-batching of new 
+        tensor-type attributes.
+
+        `type` should be one of `'node_feature'`, 
+        """

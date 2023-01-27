@@ -25,18 +25,24 @@ def collate(cls, data_list: List[Data]):
         if isinstance(value, torch.Tensor):
 
             try:
-                __inc__list = torch.tensor([data.__inc__(key)
-                                            for data in data_list])
-                # calculate the increment of feature `key` for each element
-                increment = torch.cumsum(torch.concat(
-                    (torch.tensor([0], dtype=int), __inc__list[:-1])
-                ), dim=0)
+                if data_sample.__inc__(key) != 0:
+                    __inc__list = torch.tensor([data.__inc__(key)
+                                                for data in data_list])
+                    # calculate the increment of feature `key` for each element
+                    increment = torch.cumsum(torch.concat(
+                        (torch.tensor([0], dtype=int), __inc__list[:-1])
+                    ), dim=0)
 
-                batch.__dict__[key] = torch.cat(
-                    [data.__dict__[key] + increment[idx]
-                        for idx, data in enumerate(data_list)],
-                    dim=data_sample.__cat_dim__(key)
-                )
+                    batch.__dict__[key] = torch.cat(
+                        [data.__dict__[key] + increment[idx]
+                            for idx, data in enumerate(data_list)],
+                        dim=data_sample.__cat_dim__(key)
+                    )
+                else:
+                    batch.__dict__[key] = torch.cat(
+                        [data.__dict__[key] for data in data_list],
+                        dim=data_sample.__cat_dim__(key)
+                    )
             except KeyError:
                 # If KeyError occurs, the tensor-type graph feature doesn't
                 # appear in `inc_dict` and `cat_dim_dict`, thus shouldn't
