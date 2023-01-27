@@ -1,0 +1,3 @@
+The `pygmmpp.sys` package is a collection of utilities that process graph datasets. 
+
+Functions in this package are mostly wrappers of system calls and less relevant to the underlying data structure of `pygmmpp`.
