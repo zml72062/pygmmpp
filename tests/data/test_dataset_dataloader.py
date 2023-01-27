@@ -103,7 +103,7 @@ def test_dataloader_load_qm9():
     py_test_loader = pyDataLoader(pyd[sp:], batch_size=32, shuffle=False)
 
     for (mybatch, pybatch) in zip(my_test_loader, py_test_loader):
-        for key in ['x', 'y', 'edge_index', 'edge_attr', 'name']:
+        for key in ['x', 'y', 'edge_index', 'edge_attr', 'name', 'pos', 'z']:
             val1 = mybatch.__dict__[key]
             val2 = pybatch[key]
             if isinstance(val1, torch.Tensor):
@@ -112,18 +112,14 @@ def test_dataloader_load_qm9():
                 assert val1 == val2
 
     # Due to the different collating methods between `pygmmpp` and `torch_geometric`,
-    # we treat features ['pos', 'z', 'idx'] differently
+    # we treat feature 'idx' differently
     for (mybatch, pybatch) in zip(my_test_loader, py_test_loader):
-        for key in ['pos', 'z', 'idx']:
-            if key == 'idx':
-                val1 = torch.tensor(mybatch.__dict__[key])
-            else:
-                val1 = torch.cat(mybatch.__dict__[key])
-            val2 = pybatch[key]
-            torch.testing.assert_close(val1, val2, rtol=1e-9, atol=1e-9)
+        val1 = torch.tensor(mybatch.__dict__['idx'])
+        val2 = pybatch['idx']
+        torch.testing.assert_close(val1, val2, rtol=1e-9, atol=1e-9)
 
     for (mybatch, pybatch) in zip(my_train_loader, py_train_loader):
-        for key in ['x', 'y', 'edge_index', 'edge_attr', 'name']:
+        for key in ['x', 'y', 'edge_index', 'edge_attr', 'name', 'pos', 'z']:
             val1 = mybatch.__dict__[key]
             val2 = pybatch[key]
             if isinstance(val1, torch.Tensor):
@@ -132,10 +128,6 @@ def test_dataloader_load_qm9():
                 assert val1 == val2
 
     for (mybatch, pybatch) in zip(my_train_loader, py_train_loader):
-        for key in ['pos', 'z', 'idx']:
-            if key == 'idx':
-                val1 = torch.tensor(mybatch.__dict__[key])
-            else:
-                val1 = torch.cat(mybatch.__dict__[key])
-            val2 = pybatch[key]
-            torch.testing.assert_close(val1, val2, rtol=1e-9, atol=1e-9)
+        val1 = torch.tensor(mybatch.__dict__['idx'])
+        val2 = pybatch['idx']
+        torch.testing.assert_close(val1, val2, rtol=1e-9, atol=1e-9)

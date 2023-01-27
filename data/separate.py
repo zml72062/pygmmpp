@@ -30,7 +30,8 @@ def separate(cls, obj: Any, idx: int) -> Data:
     kwargs['batch_level'] = obj.batch_level - 1
 
     for key in {'node_feature_set', 'edge_feature_set',
-                'edge_index_set', 'graph_feature_set'}:
+                'edge_index_set', 'graph_feature_set',
+                'require_slice_set'}:
         kwargs[key] = copy.copy(obj.__dict__[key])
 
     # simply copy down `cat_dim_dict` and `inc_dict`, ...
@@ -46,6 +47,7 @@ def separate(cls, obj: Any, idx: int) -> Data:
                                             obj.edge_feature_set,
                                             obj.edge_index_set,
                                             obj.graph_feature_set,
+                                            obj.require_slice_set,
                                             set(cat_dim_dict.keys()),
                                             set(inc_dict.keys()))
 
@@ -58,6 +60,10 @@ def separate(cls, obj: Any, idx: int) -> Data:
     del kwargs['inc_dict']['ptr'+str(obj.batch_level)]
     del kwargs['inc_dict']['edge_slice'+str(obj.batch_level)]
 
+    for key in obj.require_slice_set:
+        del kwargs['cat_dim_dict'][key+'_slice'+str(obj.batch_level)]
+        del kwargs['inc_dict'][key+'_slice'+str(obj.batch_level)]
+
     for key in obj.node_feature_set:
         kwargs[key] = obj.__dict__[key][start:end]
     for key in obj.edge_feature_set:
@@ -65,8 +71,23 @@ def separate(cls, obj: Any, idx: int) -> Data:
     for key in obj.graph_feature_set:
         kwargs[key] = obj.__dict__[
             key][obj.batch0[start]:obj.batch0[end-1]+1]
+
+    if 'edge_index' in obj.__dict__:
+        kwargs['edge_index'] = obj.edge_index[:, edge_start:edge_end]
+
+    for key in obj.require_slice_set:
+        val = obj.__dict__[key]
+        slicing = len(val.shape) * [slice(None)]
+        key_slice_list = torch.cat([obj.__dict__[key+'_slice'+str(obj.batch_level)],
+                                    torch.tensor([obj.__inc__(key+'_slice' +
+                                                              str(obj.batch_level))],
+                                                 dtype=int)])
+        key_start, key_end = key_slice_list[idx], key_slice_list[idx+1]
+        slicing[obj.__cat_dim__(key)] = slice(key_start, key_end)
+        kwargs[key] = val[slicing]
+
     for key in obj.edge_index_set:
-        kwargs[key] = obj.__dict__[key][:, edge_start:edge_end] - start
+        kwargs[key] = kwargs[key] - start
     for key in other_keys:
         kwargs[key] = obj.__dict__[key][idx]
 
@@ -98,4 +119,13 @@ def separate(cls, obj: Any, idx: int) -> Data:
                          str(l)] = len(out.__dict__['batch'+str(l)])
             out.inc_dict['edge_slice' +
                          str(l)] = out.num_edges
+
+            for key in obj.require_slice_set:
+                key_slice_l = obj.__dict__[key+'_slice'+str(l)][
+                    batch_l[0]:batch_l[-1]+1]
+                out.__dict__[key+'_slice' +
+                             str(l)] = key_slice_l - torch.min(key_slice_l)
+                out.inc_dict[key+'_slice'+str(l)] = out.__dict__[key].shape[
+                    out.__cat_dim__(key)
+                ]
         return out

@@ -96,6 +96,22 @@ def collate(cls, data_list: List[Data]):
                 )
                 batch.cat_dim_dict['edge_slice'+str(batch.batch_level)] = 0
 
+            elif key in data_sample.require_slice_set:
+                # add a top-level slice vector for `key`
+                key_num_list = torch.tensor([data.__dict__[key].shape[
+                    data.__cat_dim__(key)] for data in data_list])
+                key_slice = torch.cumsum(torch.concat(
+                    (torch.tensor([0], dtype=int), key_num_list[:-1])
+                ), dim=0)
+
+                batch.__dict__[key+'_slice' +
+                               str(batch.batch_level)] = key_slice
+
+                batch.inc_dict[key+'_slice'+str(batch.batch_level)] = sum(
+                    key_num_list
+                )
+                batch.cat_dim_dict[key+'_slice'+str(batch.batch_level)] = 0
+
         elif key == 'cat_dim_dict':
             for feature in value:
                 batch.__dict__[key][feature] = value[feature]

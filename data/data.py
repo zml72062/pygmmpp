@@ -25,6 +25,7 @@ class Data:
         self.edge_feature_set: set[str] = set()
         self.edge_index_set: set[str] = set()
         self.graph_feature_set: set[str] = set()
+        self.require_slice_set: set[str] = set()
 
         if x is not None:
             self.node_feature_set.add('x')
@@ -186,11 +187,41 @@ class Data:
 
     def __set_tensor_attr__(self, name: str,
                             value: torch.Tensor,
-                            type: str,
-                            slicing: str,):
+                            collate_type: str,
+                            cat_dim: Optional[int] = None,
+                            slicing: bool = False):
         """
         An extension to `__setattr__`, which allows auto-batching of new
         tensor-type attributes.
 
-        `type` should be one of `'node_feature'`,
+        `collate_type` should be one of `'node_feature'`, `'edge_feature'`, 
+        `'edge_index'`, `'graph_feature'`, `'auto_collate'` or `'no_collate'`.
+
+        When `slicing` is set `True`, an additional slice vector for the feature
+        will be added. This should only happen when `collate_type='edge_index'` or 
+        `collate_type='auto_collate'`.
         """
+        assert collate_type in {'node_feature', 'edge_feature', 'graph_feature',
+                                'edge_index', 'auto_collate', 'no_collate'
+                                }, "Invalid collate type!"
+
+        self.__setattr__(name, value)
+
+        if collate_type == 'no_collate':
+            return
+
+        if collate_type in {'node_feature', 'edge_feature', 'graph_feature'}:
+            assert slicing == False, "Can't customize slicing method when collate_type is "
+            "node_feature, edge_feature or graph_feature!"
+            self.__dict__[collate_type+'_set'].add(name)
+            return
+
+        if collate_type == 'edge_index':
+            self.edge_index_set.add(name)
+        elif collate_type == 'auto_collate':
+            assert cat_dim is not None, "Auto collating receives NoneType cat_dim!"
+            self.cat_dim_dict[name] = cat_dim
+            self.inc_dict[name] = 0
+
+        if slicing:
+            self.require_slice_set.add(name)

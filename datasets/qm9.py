@@ -281,8 +281,10 @@ class QM9(Dataset):
             y = target[i].unsqueeze(0)
             name = mol.GetProp('_Name')
 
-            data = Data(x=x, z=z, pos=pos, edge_index=edge_index,
+            data = Data(x=x, edge_index=edge_index,
                         edge_attr=edge_attr, y=y, name=name, idx=i)
+            data.__set_tensor_attr__('z', z, 'node_feature')
+            data.__set_tensor_attr__('pos', pos, 'node_feature')
 
             if self.pre_filter is not None and not self.pre_filter(data):
                 continue

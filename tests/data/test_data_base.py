@@ -20,17 +20,20 @@ def test_data_keys():
     assert set(myd.keys()) == {'x', 'edge_index', 'edge_attr', 'name', 'y',
                                'cat_dim_dict', 'inc_dict', 'batch_level',
                                'node_feature_set', 'edge_feature_set',
-                               'edge_index_set', 'graph_feature_set'}
+                               'edge_index_set', 'graph_feature_set',
+                               'require_slice_set'}
     del myd.name
     assert set(myd.keys()) == {'x', 'edge_index', 'edge_attr', 'y',
                                'cat_dim_dict', 'inc_dict', 'batch_level',
                                'node_feature_set', 'edge_feature_set',
-                               'edge_index_set', 'graph_feature_set'}
+                               'edge_index_set', 'graph_feature_set',
+                               'require_slice_set'}
     myd.author = 'zml72062'
     assert set(myd.keys()) == {'x', 'edge_index', 'edge_attr', 'y', 'author',
                                'cat_dim_dict', 'inc_dict', 'batch_level',
                                'node_feature_set', 'edge_feature_set',
-                               'edge_index_set', 'graph_feature_set'}
+                               'edge_index_set', 'graph_feature_set',
+                               'require_slice_set'}
 
 
 def test_data_values():
