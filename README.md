@@ -20,6 +20,8 @@ To make it easier to add new features into a graph, we introduced four special "
 
 We store the keys that belong to those four classes in four distinct sets, and treat each of the class specially when calling `collate()` or `separate()`.
 
+To conveniently add a new tensor-type feature to a `Data` object, we provide the `__set_tensor_attr__()` method, which is an extension to `__setattr__()`, by letting the caller decide whether the feature belongs to the above four "feature classes", or whether the feature needs auto-batching service. Moreover, this extension comes with a small overhead.
+
 ## `Batch` --- support for batching
 
 For efficient training on GPU, we need to combine a bag of graphs into a batch. 
