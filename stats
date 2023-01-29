@@ -9,7 +9,10 @@ pygmmpp.data
 
 pygmmpp.utils
 
-    self_loop.py    31 lines
+    self_loop.py    50 lines
 
 pygmmpp.nn
-    message_passing.py
+
+    message_passing.py  
+                    108 lines
+    pool.py         29 lines

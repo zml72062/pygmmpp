@@ -44,3 +44,7 @@ The `torch_geometric` package processes the datasets and the batches differently
 ## `DataLoader` --- loading datasets
 
 The `DataLoader` uses the `torch.utils.data.DataLoader` class, and is a simple wrapper class. 
+
+## `MessagePassing` --- message-passing layers
+
+The `MessagePassing` class offers a handy way to define graph convolutional operators. To define a MPNN layer, one only needs to implement `message()` and `update()` methods (and `forward()`, optionally, though we have offered a default implementation).
