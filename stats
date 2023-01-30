@@ -10,6 +10,8 @@ pygmmpp.data
 pygmmpp.utils
 
     self_loop.py    50 lines
+    degree.py       19 lines
+    subgraph.py     102 lines
 
 pygmmpp.nn
 

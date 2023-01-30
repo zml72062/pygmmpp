@@ -6,6 +6,7 @@ except:
 import pygmmpp.data as mydata
 from pygmmpp.utils.self_loop import *
 from pygmmpp.utils.degree import *
+from pygmmpp.utils.subgraph import *
 import torch
 
 
@@ -87,3 +88,41 @@ def test_utils_degree2():
     torch.testing.assert_close(degree(edge_index[0], 7), torch.tensor([
         0, 2, 2, 2, 3, 1, 0
     ]), rtol=1e-9, atol=1e-9)
+
+
+def test_utils_subgraph():
+    edge_index = torch.tensor([[0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 0, 4, 8, 3, 5],
+                               [1, 0, 2, 1, 3, 2, 4, 3, 5, 4, 6, 5, 7, 6, 8, 7, 0, 8, 8, 4, 5, 3]], dtype=int)
+    out_edge_index, _, edge_mask = subgraph(
+        [3, 1, 4, 5, 8], edge_index, 9)
+    torch.testing.assert_close(out_edge_index, torch.tensor([[3, 4, 4, 5, 4, 8, 3, 5],
+                                                             [4, 3, 5, 4, 8, 4, 5, 3]]),
+                               rtol=1e-9, atol=1e-9)
+    assert torch.all(edge_mask == torch.tensor(
+        [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1], dtype=torch.bool))
+
+    out_edge_index, _, edge_mask = subgraph(
+        [3, 4, 5, 2, 6], edge_index, 9, relabel_nodes=True)
+    torch.testing.assert_close(out_edge_index, torch.tensor([[0, 1, 1, 2, 2, 3, 3, 4, 1, 3],
+                                                             [1, 0, 2, 1, 3, 2, 4, 3, 3, 1]]),
+                               rtol=1e-9, atol=1e-9)
+    assert torch.all(edge_mask == torch.tensor(
+        [0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1], dtype=torch.bool))
+
+    subset, out_edge_index, _, out_edge_mask = k_hop_subgraph(
+        4, 1, edge_index, 9)
+    torch.testing.assert_close(subset, torch.tensor(
+        [3, 4, 5, 8]), rtol=1e-9, atol=1e-9)
+    torch.testing.assert_close(out_edge_index, torch.tensor([[3, 4, 4, 5, 4, 8, 3, 5],
+                                                             [4, 3, 5, 4, 8, 4, 5, 3]]),
+                               rtol=1e-9, atol=1e-9)
+    assert torch.all(out_edge_mask == torch.tensor(
+        [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1], dtype=torch.bool))
+
+    subset, out_edge_index, _, out_edge_mask = k_hop_subgraph(
+        4, 2, edge_index, 9, True)
+    torch.testing.assert_close(subset, torch.tensor(
+        [0, 2, 3, 4, 5, 6, 7, 8]), rtol=1e-9, atol=1e-9)
+    torch.testing.assert_close(out_edge_index, torch.tensor([[1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 0, 3, 7, 2, 4],
+                               [2, 1, 3, 2, 4, 3, 5, 4, 6, 5, 7, 6, 0, 7, 7, 3, 4, 2]], dtype=int),
+                               rtol=1e-9, atol=1e-9)
