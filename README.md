@@ -6,6 +6,13 @@
 
 Packages `torch`, `torch_scatter`, `torch_sparse` should be installed.
 
+## Installation
+
+Run the following command to install.
+```
+python3 setup.py install
+```
+
 ## `Data` --- the basic data structure
 
 For a graph with $n$ nodes and $m$ edges, we use $X\in \mathbb{R}^{n\times f_n}$ to encode its node features, $E\in \mathbb{R}^{m\times f_e}$ to encode its edge features, and $y\in \mathbb{R}^{1\times f_g}$ to encode its label. The adjacency matrix is denoted by $A\in \mathbb{R}^{n\times n}$.
