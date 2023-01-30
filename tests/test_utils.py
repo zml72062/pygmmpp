@@ -4,9 +4,7 @@ try:
 except:
     pass
 import pygmmpp.data as mydata
-from pygmmpp.utils.self_loop import *
-from pygmmpp.utils.degree import *
-from pygmmpp.utils.subgraph import *
+from pygmmpp.utils import *
 import torch
 
 
