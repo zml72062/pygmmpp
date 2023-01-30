@@ -20,7 +20,7 @@ class Model(torch.nn.Module):
 
     `hidden_channels (int)` - Size of hidden dimension
 
-    `num_layers (int)` - Number of MLP layers
+    `num_layers (int)` - Number of GNN layers
 
     `out_channels (Optional[int])` - Size of output dimension; if `None`,
     set to `hidden_channels`
