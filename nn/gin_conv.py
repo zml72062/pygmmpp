@@ -6,6 +6,7 @@ import torch
 import torch.nn
 import torch.nn.functional as F
 from .message_passing import MessagePassing
+from .model import reset_parameters
 from typing import Callable, Optional
 
 
@@ -71,11 +72,3 @@ class GINEConv(MessagePassing):
     def update(self, aggr_out: torch.Tensor,
                x: torch.Tensor):
         return self.nn((1+self.eps) * x + aggr_out)
-
-
-def reset_parameters(nn: torch.nn.Module):
-    if hasattr(nn, 'reset_parameters'):
-        nn.reset_parameters()
-    elif hasattr(nn, 'children'):
-        for child in nn.children():
-            reset_parameters(child)
