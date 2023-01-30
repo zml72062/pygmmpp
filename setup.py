@@ -4,5 +4,11 @@ setup(
     name='pygmmpp',
     description='PyG Minus Minus Plus Plus',
     author='zml72062',
-    packages=['data', 'data.sys', 'datasets', 'datasets.io', 'nn', 'utils'],
+    packages=['pygmmpp',
+              'pygmmpp.data',
+              'pygmmpp.data.sys',
+              'pygmmpp.datasets',
+              'pygmmpp.datasets.io',
+              'pygmmpp.nn',
+              'pygmmpp.utils'],
 )

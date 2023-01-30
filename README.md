@@ -8,10 +8,7 @@ Packages `torch`, `torch_scatter`, `torch_sparse` should be installed.
 
 ## Installation
 
-Run the following command to install.
-```
-python3 setup.py install
-```
+Run `make` to install.
 
 ## `Data` --- the basic data structure
 
