@@ -115,7 +115,7 @@ class Model(torch.nn.Module):
             return self.lins[-1](torch.cat(emb_list, dim=-1))
 
     def __repr__(self):
-        return self.__class__.__name__ + '(' + self.num_layers + ')'
+        return self.__class__.__name__ + '(' + str(self.num_layers) + ')'
 
 
 def reset_parameters(nn: torch.nn.Module):
