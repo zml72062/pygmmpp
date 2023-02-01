@@ -91,12 +91,12 @@ class Model(torch.nn.Module):
             if hasattr(norm, 'reset_parameters'):
                 norm.reset_parameters()
 
-    def forward(self, x: torch.Tensor):
+    def forward(self, x: torch.Tensor, **kwargs):
         if self.residual is not None:
             emb_list = []
 
         for i in range(self.num_layers):
-            x = self.lins[i](x)
+            x = self.lins[i](x, **kwargs)
             if self.relu_first:
                 x = F.relu(x)
             x = self.norms[i](x)
