@@ -61,8 +61,11 @@ class MessagePassing(torch.nn.Module):
 
         self.node_feature_set = node_feature_set
 
-    def forward(self, x: torch.Tensor,
-                edge_index: torch.Tensor, **kwargs):
+    def message_(self, x: torch.Tensor,
+                 edge_index: torch.Tensor, **kwargs) -> torch.Tensor:
+        """
+        Wrapper function that calls `message()`.
+        """
         # get input arguments for `message()` method
         message_in = inspect.signature(self.message).parameters.keys()
 
@@ -88,15 +91,15 @@ class MessagePassing(torch.nn.Module):
         message_kwargs['edge_index'] = edge_index
 
         # call `message()`
-        messages = self.message(**{
+        return self.message(**{
             k: message_kwargs[k] for k in message_in
         })
 
-        # execute aggregation
-        aggr_out = torch_scatter.scatter(
-            messages, tgt, dim=0, reduce=self.aggr
-        )
-
+    def update_(self, aggr_out: torch.Tensor,
+                x: torch.Tensor, **kwargs) -> torch.Tensor:
+        """
+        Wrapper function that calls `update()`.
+        """
         # get input arguments for `update()` method
         update_in = inspect.signature(self.update).parameters.keys()
         # collect arguments for `update()` call
@@ -105,3 +108,20 @@ class MessagePassing(torch.nn.Module):
         return self.update(**{
             k: kwargs[k] for k in update_in
         })
+
+    def forward(self, x: torch.Tensor,
+                edge_index: torch.Tensor, **kwargs):
+
+        if self.flow == 'src_to_tgt':
+            src, tgt = edge_index
+        else:
+            tgt, src = edge_index
+
+        messages = self.message_(x, edge_index, **kwargs)
+
+        # execute aggregation
+        aggr_out = torch_scatter.scatter(
+            messages, tgt, dim=0, reduce=self.aggr
+        )
+
+        return self.update_(aggr_out, x, **kwargs)
