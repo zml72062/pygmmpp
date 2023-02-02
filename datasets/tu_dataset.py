@@ -161,6 +161,10 @@ class TUDataset(Dataset):
         return self.sizes['num_edge_attributes']
 
     @property
+    def num_classes(self) -> int:
+        return int(self.data_batch.y.max()) + 1
+
+    @property
     def raw_file_names(self) -> List[str]:
         names = ['A', 'graph_indicator']
         return [f'{self.name}_{name}.txt' for name in names]
