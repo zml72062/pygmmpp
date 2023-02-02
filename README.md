@@ -24,7 +24,7 @@ To make it easier to add new features into a graph, we introduced four special "
 
 We store the keys that belong to those four classes in four distinct sets, and treat each of the class specially when calling `collate()` or `separate()`.
 
-To conveniently add a new tensor-type feature to a `Data` object, we provide the `__set_tensor_attr__()` method, which is an extension to `__setattr__()`, by letting the caller decide whether the feature belongs to the above four "feature classes", or whether the feature needs auto-batching service. Moreover, this extension comes with a small overhead.
+To conveniently add a new tensor-type feature to a `Data` object, we provide the `__set_tensor_attr__()` method, which is an extension to `__setattr__()`, by letting the caller decide whether the feature belongs to the above four "feature classes", or whether the feature needs auto-batching service. Moreover, this extension comes with little overhead which is negligible compared with the performance gain due to our simplified architecture of the framework.
 
 ## `Batch` --- support for batching
 
@@ -43,7 +43,7 @@ The `torch_geometric` package offers an automatic batching for non-standard grap
 
 We use a `Dataset` object, which simply wraps a `Batch` object, to store a graph dataset. When calling `__getitem__` on datasets, we return a graph from the dataset if the index is an integer, and return a "view" of the original dataset if the index is a slicing. This makes it zero-copy if we only want to split the dataset (into train / test, etc).
 
-The `torch_geometric` package processes the datasets and the batches differently, which makes itself a less unified framework. Our profile test on real-world datasets proves that our treatment is a little (~1.3x time) slower, but more elegant.
+The `torch_geometric` package processes the datasets and the batches differently, which makes itself a less unified framework. Our profile test on real-world datasets (QM9) proves that our treatment is both faster (~0.6x time) and more elegant while being a little more storage-consuming (~1.07x disk space).
 
 ## `DataLoader` --- loading datasets
 
