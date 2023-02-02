@@ -12,19 +12,22 @@ def separate(cls, obj: Any, idx: int) -> Data:
     Get the `idx`-th graph from `obj`, which is a batch of graphs.
     """
     # get the top-level `ptr` vector
-    ptr_list = torch.cat([obj.__dict__['ptr'+str(obj.batch_level)],
-                          torch.tensor([obj.__inc__('ptr'+str(obj.batch_level))],
-                                       dtype=int)])
+    ptr_list = obj.__dict__['ptr'+str(obj.batch_level)]
     # nodes in the graph has indices within [start, end)
-    start, end = ptr_list[idx], ptr_list[idx+1]
+    start = ptr_list[idx]
+    try:
+        end = ptr_list[idx+1]
+    except IndexError:
+        end = obj.__inc__('ptr'+str(obj.batch_level))
 
     if 'edge_index' in obj.__dict__:
         # get the top-level `edge_slice` vector
-        edge_slice_list = torch.cat([obj.__dict__['edge_slice'+str(obj.batch_level)],
-                                     torch.tensor([obj.__inc__('edge_slice' +
-                                                               str(obj.batch_level))],
-                                                  dtype=int)])
-        edge_start, edge_end = edge_slice_list[idx], edge_slice_list[idx+1]
+        edge_slice_list = obj.__dict__['edge_slice'+str(obj.batch_level)]
+        edge_start = edge_slice_list[idx]
+        try:
+            edge_end = edge_slice_list[idx+1]
+        except IndexError:
+            edge_end = obj.__inc__('edge_slice' + str(obj.batch_level))
 
     kwargs = {}
     kwargs['batch_level'] = obj.batch_level - 1
@@ -78,11 +81,12 @@ def separate(cls, obj: Any, idx: int) -> Data:
     for key in obj.require_slice_set:
         val = obj.__dict__[key]
         slicing = len(val.shape) * [slice(None)]
-        key_slice_list = torch.cat([obj.__dict__[key+'_slice'+str(obj.batch_level)],
-                                    torch.tensor([obj.__inc__(key+'_slice' +
-                                                              str(obj.batch_level))],
-                                                 dtype=int)])
-        key_start, key_end = key_slice_list[idx], key_slice_list[idx+1]
+        key_slice_list = obj.__dict__[key+'_slice'+str(obj.batch_level)]
+        key_start = key_slice_list[idx]
+        try:
+            key_end = key_slice_list[idx+1]
+        except IndexError:
+            key_end = obj.__inc__(key+'_slice' + str(obj.batch_level))
         slicing[obj.__cat_dim__(key)] = slice(key_start, key_end)
         kwargs[key] = val[slicing]
 
