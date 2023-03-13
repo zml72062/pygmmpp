@@ -11,7 +11,7 @@ def add_self_loops(data: Data, reduce: str = 'add') -> Data:
     out_data = data.clone()
     edge_index = data.edge_index if hasattr(data, 'edge_index') else None
     edge_attr = data.edge_attr if hasattr(data, 'edge_attr') else None
-    out_data.edge_index, out_data.edge_attr = _add_self_loops(
+    out_data.edge_index, out_data.edge_attr = add_self_loops_from_tensor(
         edge_index, data.num_nodes, edge_attr, reduce
     )
     if out_data.edge_attr is None:
@@ -19,9 +19,9 @@ def add_self_loops(data: Data, reduce: str = 'add') -> Data:
     return out_data
 
 
-def _add_self_loops(edge_index: torch.LongTensor, num_nodes: int,
-                    edge_attr: Optional[torch.Tensor] = None,
-                    reduce: str = 'add') -> Tuple[
+def add_self_loops_from_tensor(edge_index: torch.LongTensor, num_nodes: int,
+                               edge_attr: Optional[torch.Tensor] = None,
+                               reduce: str = 'add') -> Tuple[
         torch.Tensor, Optional[torch.Tensor]]:
     out_edge_index = torch.cat((edge_index, torch.cat(
         (torch.arange(num_nodes).reshape(1, num_nodes),
@@ -41,9 +41,25 @@ def _add_self_loops(edge_index: torch.LongTensor, num_nodes: int,
 def remove_self_loops(data: Data) -> Data:
     out_data = data.clone()
     if hasattr(data, 'edge_index'):
-        src, tgt = data.edge_index
-        no_self_loop_idx = src != tgt
-        out_data.edge_index = out_data.edge_index[:, no_self_loop_idx]
+        edge_index = data.edge_index
         if hasattr(data, 'edge_attr'):
-            out_data.edge_attr = out_data.edge_attr[no_self_loop_idx]
+            edge_attr = data.edge_attr
+        else:
+            edge_attr = None
+        out_data.edge_index, out_data.edge_attr = remove_self_loops_from_tensor(
+            edge_index, edge_attr
+        )
+        if out_data.edge_attr is None:
+            del out_data.edge_attr
     return out_data
+
+def remove_self_loops_from_tensor(edge_index: torch.LongTensor, 
+                                  edge_attr: Optional[torch.Tensor] = None):
+    src, tgt = edge_index
+    no_self_loop_idx = src != tgt
+    out_edge_index = edge_index[:, no_self_loop_idx]
+    if edge_attr is not None:
+        out_edge_attr = edge_attr[no_self_loop_idx]
+        return out_edge_index, out_edge_attr
+    return out_edge_index, None
+

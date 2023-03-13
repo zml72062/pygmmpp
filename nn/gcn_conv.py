@@ -6,7 +6,7 @@ import torch
 import torch.nn as nn
 from .message_passing import MessagePassing
 from ..utils.degree import degree
-from ..utils.self_loop import _add_self_loops
+from ..utils.self_loop import add_self_loops_from_tensor
 
 
 class GCNConv(MessagePassing):
@@ -39,5 +39,5 @@ class GCNConv(MessagePassing):
                 edge_index: torch.Tensor,
                 num_nodes: int, **kwargs):
         if self.add_self_loops:
-            edge_index, _ = _add_self_loops(edge_index, num_nodes)
+            edge_index, _ = add_self_loops_from_tensor(edge_index, num_nodes)
         return super().forward(x, edge_index, num_nodes=num_nodes, **kwargs)
