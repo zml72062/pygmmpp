@@ -96,7 +96,10 @@ class Data:
     @property
     def num_edge_features(self) -> int:
         if hasattr(self, 'edge_attr'):
-            return self.edge_attr.shape[1]
+            try:
+                return self.edge_attr.shape[1]
+            except IndexError:
+                return 1
         return 0
 
     @property

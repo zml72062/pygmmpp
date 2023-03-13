@@ -11,4 +11,5 @@ setup(
               'pygmmpp.datasets.io',
               'pygmmpp.nn',
               'pygmmpp.utils'],
+    package_data={'pygmmpp.datasets': ['master.csv']}
 )
