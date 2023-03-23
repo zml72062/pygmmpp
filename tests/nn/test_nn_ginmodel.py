@@ -191,7 +191,7 @@ def test_nn_ginmodel_forward_layernorm():
     mymodel = GINModel(10, 50, 4, 50,  residual='cat', norm='layer_norm', mlp_norm='layer_norm',
                        eps=0.1, train_eps=True)
     torch.manual_seed(1992)
-    pymodel = pyGINModel(10, 50, 4, norm='LayerNorm', jk='cat',
+    pymodel = pyGINModel(10, 50, 4, norm='LayerNorm', norm_kwargs={'mode': 'node'}, jk='cat',
                          eps=0.1, train_eps=True)
 
     assert len([p for p in mymodel.parameters()]) == len(
@@ -213,7 +213,7 @@ def test_nn_ginmodel_train_epoch_tu_layernorm():
                        eps=0.1, train_eps=True)
     myoptim = Adam(mymodel.parameters(), lr=0.01)
     torch.manual_seed(1992)
-    pymodel = pyGINModel(7, 50, 4, out_channels=2, norm='LayerNorm', jk='cat',
+    pymodel = pyGINModel(7, 50, 4, out_channels=2, norm='LayerNorm', norm_kwargs={'mode': 'node'}, jk='cat',
                          eps=0.1, train_eps=True)
     pyoptim = Adam(pymodel.parameters(), lr=0.01)
 
@@ -251,7 +251,7 @@ def test_nn_ginmodel_eval_epoch_tu_layernorm():
     mymodel = GINModel(7, 50, 4, 50, out_channels=2, residual='cat', norm='layer_norm', mlp_norm='layer_norm',
                        eps=0.1, train_eps=True)
     torch.manual_seed(1992)
-    pymodel = pyGINModel(7, 50, 4, out_channels=2, norm='LayerNorm', jk='cat',
+    pymodel = pyGINModel(7, 50, 4, out_channels=2, norm='LayerNorm', norm_kwargs={'mode': 'node'}, jk='cat',
                          eps=0.1, train_eps=True)
 
     mymodel.eval()
