@@ -3,6 +3,7 @@ try:
     sys.path.append('.')
 except:
     pass
+import sklearn # fix ogb package deadlock error
 from pygmmpp.datasets.ogb_graph import OGBG as myOGB
 from ogb.graphproppred import PygGraphPropPredDataset as pyOGB
 from pygmmpp.data import DataLoader as myDataLoader
