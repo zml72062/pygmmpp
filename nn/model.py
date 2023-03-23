@@ -30,7 +30,8 @@ class Model(torch.nn.Module):
     `residual (Optional[str])` - Whether to use jumping connection, can be `None`,
     `'add'`, or `'cat'`
 
-    `batch_norm (bool)` - Whether to use batch normalization.
+    `norm (Optional[str])` - Whether to use normalization, can be `None`, 
+    `'batch_norm'`, or `'layer_norm'`
 
     `relu_first (bool)` - Whether to apply `nn.ReLU` before batch norm.
     """
@@ -46,7 +47,7 @@ class Model(torch.nn.Module):
                  out_channels: Optional[int] = None,
                  dropout: float = 0.0,
                  residual: Optional[str] = None,
-                 batch_norm: bool = True,
+                 norm: Optional[str] = None,
                  relu_first: bool = False,
                  **kwargs):
         super().__init__()
@@ -70,10 +71,12 @@ class Model(torch.nn.Module):
 
         self.norms = torch.nn.ModuleList()
         for _ in range(num_layers):
-            if batch_norm:
-                self.norms.append(torch.nn.BatchNorm1d(hidden_channels))
-            else:
+            if norm is None:
                 self.norms.append(torch.nn.Identity())
+            elif norm == 'batch_norm':
+                self.norms.append(torch.nn.BatchNorm1d(hidden_channels))
+            elif norm == 'layer_norm':
+                self.norms.append(torch.nn.LayerNorm(hidden_channels))
 
         self.num_layers = num_layers
         self.in_channels = in_channels
@@ -142,7 +145,7 @@ class MLP(Model):
                  out_channels: Optional[int] = None,
                  dropout: float = 0.0,
                  residual: Optional[str] = None,
-                 batch_norm: bool = True,
+                 norm: Optional[str] = None,
                  bias: bool = True,
                  relu_first: bool = False,
                  **kwargs):
@@ -152,7 +155,7 @@ class MLP(Model):
                          out_channels,
                          dropout,
                          residual,
-                         batch_norm,
+                         norm,
                          relu_first,
                          bias=bias,
                          **kwargs)
