@@ -26,6 +26,7 @@ class Data:
         self.edge_index_set: set[str] = set()
         self.graph_feature_set: set[str] = set()
         self.require_slice_set: set[str] = set()
+        self.borrow_slice_dict: Dict[str, str] = {}
 
         if x is not None:
             self.node_feature_set.add('x')
@@ -192,7 +193,8 @@ class Data:
                             value: torch.Tensor,
                             collate_type: str,
                             cat_dim: Optional[int] = None,
-                            slicing: bool = False):
+                            slicing: bool = False,
+                            use_slice: Optional[str] = None):
         """
         An extension to `__setattr__`, which allows auto-batching of new
         tensor-type attributes.
@@ -203,6 +205,10 @@ class Data:
         When `slicing` is set `True`, an additional slice vector for the feature
         will be added. This should only happen when `collate_type='edge_index'` or 
         `collate_type='auto_collate'`.
+
+        When `use_slice` is not `None`, we will use an already existing slicing
+        vector to slice the current tensor-type attribute, instead of creating a
+        new slicing vector.
         """
         assert collate_type in {'node_feature', 'edge_feature', 'graph_feature',
                                 'edge_index', 'auto_collate', 'no_collate'
@@ -227,4 +233,7 @@ class Data:
             self.inc_dict[name] = 0
 
         if slicing:
-            self.require_slice_set.add(name)
+            if use_slice is None:
+                self.require_slice_set.add(name)
+            else:
+                self.borrow_slice_dict[name] = use_slice

@@ -21,19 +21,19 @@ def test_data_keys():
                                'cat_dim_dict', 'inc_dict', 'batch_level',
                                'node_feature_set', 'edge_feature_set',
                                'edge_index_set', 'graph_feature_set',
-                               'require_slice_set'}
+                               'require_slice_set', 'borrow_slice_dict'}
     del myd.name
     assert set(myd.keys()) == {'x', 'edge_index', 'edge_attr', 'y',
                                'cat_dim_dict', 'inc_dict', 'batch_level',
                                'node_feature_set', 'edge_feature_set',
                                'edge_index_set', 'graph_feature_set',
-                               'require_slice_set'}
+                               'require_slice_set', 'borrow_slice_dict'}
     myd.author = 'zml72062'
     assert set(myd.keys()) == {'x', 'edge_index', 'edge_attr', 'y', 'author',
                                'cat_dim_dict', 'inc_dict', 'batch_level',
                                'node_feature_set', 'edge_feature_set',
                                'edge_index_set', 'graph_feature_set',
-                               'require_slice_set'}
+                               'require_slice_set', 'borrow_slice_dict'}
 
 
 def test_data_values():

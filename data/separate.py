@@ -34,7 +34,7 @@ def separate(cls, obj: Any, idx: int) -> Data:
 
     for key in {'node_feature_set', 'edge_feature_set',
                 'edge_index_set', 'graph_feature_set',
-                'require_slice_set'}:
+                'require_slice_set', 'borrow_slice_dict'}:
         kwargs[key] = copy.copy(obj.__dict__[key])
 
     # simply copy down `cat_dim_dict` and `inc_dict`, ...
@@ -51,6 +51,7 @@ def separate(cls, obj: Any, idx: int) -> Data:
                                             obj.edge_index_set,
                                             obj.graph_feature_set,
                                             obj.require_slice_set,
+                                            set(obj.borrow_slice_dict.keys()),
                                             set(cat_dim_dict.keys()),
                                             set(inc_dict.keys()))
 
@@ -87,6 +88,20 @@ def separate(cls, obj: Any, idx: int) -> Data:
             key_end = key_slice_list[idx+1]
         except IndexError:
             key_end = obj.__inc__(key+'_slice' + str(obj.batch_level))
+        slicing[obj.__cat_dim__(key)] = slice(key_start, key_end)
+        kwargs[key] = val[slicing]
+    
+    for key in obj.borrow_slice_dict.keys():
+        val = obj.__dict__[key]
+        slicing = len(val.shape) * [slice(None)]
+        key_slice_list = obj.__dict__[obj.borrow_slice_dict[key]
+                                      +'_slice'+str(obj.batch_level)]
+        key_start = key_slice_list[idx]
+        try:
+            key_end = key_slice_list[idx+1]
+        except IndexError:
+            key_end = obj.__inc__(obj.borrow_slice_dict[key]
+                                  +'_slice' + str(obj.batch_level))
         slicing[obj.__cat_dim__(key)] = slice(key_start, key_end)
         kwargs[key] = val[slicing]
 

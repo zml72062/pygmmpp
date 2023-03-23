@@ -48,7 +48,7 @@ def test_batch_collate_1():
                                  'ptr0', 'batch_level', 'edge_slice0',
                                  'node_feature_set', 'edge_feature_set',
                                  'edge_index_set', 'graph_feature_set',
-                                 'require_slice_set'}
+                                 'require_slice_set', 'borrow_slice_dict'}
     assert batch.num_nodes == 21
     assert batch.num_edges == 48
     assert batch.num_node_features == 10
@@ -161,7 +161,7 @@ def test_batch_collate_2():
                                  'edge_slice0', 'edge_slice1',
                                  'node_feature_set', 'edge_feature_set',
                                  'edge_index_set', 'graph_feature_set',
-                                 'require_slice_set'}
+                                 'require_slice_set', 'borrow_slice_dict'}
     assert batch.num_nodes == 21
     assert batch.num_edges == 48
     assert batch.num_node_features == 10

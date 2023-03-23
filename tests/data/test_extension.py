@@ -53,6 +53,12 @@ def test_extension_collate_1():
         torch.randn(17, 15),
         torch.randn(18, 15)
     ]
+    two_hop_neighbor_feature = [
+        torch.ones((0, 17)),
+        torch.randn(12, 17),
+        torch.randn(8, 17),
+        torch.randn(2, 17)
+    ]
     data_list = [Data(x_i, edge_index_i, edge_attr_i, y_i) for
                  (x_i, edge_index_i, edge_attr_i, y_i)
                  in zip(x, edge_index, edge_attr, y)]
@@ -61,6 +67,8 @@ def test_extension_collate_1():
                                          collate_type='edge_index', slicing=True)
         data_list[i].__set_tensor_attr__('uselessfeature', uselessfeature[i],
                                          collate_type='auto_collate', cat_dim=0, slicing=True)
+        data_list[i].__set_tensor_attr__('two_hop_neighbor_feature', two_hop_neighbor_feature[i],
+                                         collate_type='auto_collate', cat_dim=0, slicing=True, use_slice='two_hop_edge_index')
     batch: Batch = Batch.from_data_list(data_list)
     assert set(batch.keys()) == {'x', 'edge_index', 'edge_attr', 'y',
                                  'inc_dict', 'cat_dim_dict', 'batch0',
@@ -68,8 +76,8 @@ def test_extension_collate_1():
                                  'node_feature_set', 'edge_feature_set',
                                  'edge_index_set', 'graph_feature_set',
                                  'require_slice_set', 'two_hop_edge_index',
-                                 'two_hop_edge_index_slice0',
-                                 'uselessfeature', 'uselessfeature_slice0'}
+                                 'two_hop_edge_index_slice0', 'two_hop_neighbor_feature',
+                                 'uselessfeature', 'uselessfeature_slice0', 'borrow_slice_dict'}
     assert batch.num_nodes == 21
     assert batch.num_edges == 48
     assert batch.num_node_features == 10
@@ -102,6 +110,8 @@ def test_extension_collate_1():
     torch.testing.assert_close(batch.uselessfeature_slice0, torch.tensor([
         0, 13, 28, 45
     ]), rtol=1e-9, atol=1e-9)
+    torch.testing.assert_close(batch.two_hop_neighbor_feature, torch.cat(two_hop_neighbor_feature),
+                               rtol=1e-9, atol=1e-9)
 
 
 def test_extension_separate_1():
@@ -149,6 +159,12 @@ def test_extension_separate_1():
         torch.randn(17, 15),
         torch.randn(18, 15)
     ]
+    two_hop_neighbor_feature = [
+        torch.ones((0, 17)),
+        torch.randn(12, 17),
+        torch.randn(8, 17),
+        torch.randn(2, 17)
+    ]
     data_list = [Data(x_i, edge_index_i, edge_attr_i, y_i) for
                  (x_i, edge_index_i, edge_attr_i, y_i)
                  in zip(x, edge_index, edge_attr, y)]
@@ -157,6 +173,8 @@ def test_extension_separate_1():
                                          collate_type='edge_index', slicing=True)
         data_list[i].__set_tensor_attr__('uselessfeature', uselessfeature[i],
                                          collate_type='auto_collate', cat_dim=0, slicing=True)
+        data_list[i].__set_tensor_attr__('two_hop_neighbor_feature', two_hop_neighbor_feature[i],
+                                         collate_type='auto_collate', cat_dim=0, slicing=True, use_slice='two_hop_edge_index')
     batch: Batch = Batch.from_data_list(data_list)
     for i in range(4):
         data1 = batch[i]
@@ -217,6 +235,12 @@ def test_extension_collate_2():
         torch.randn(17, 15),
         torch.randn(18, 15)
     ]
+    two_hop_neighbor_feature = [
+        torch.ones((0, 17)),
+        torch.randn(12, 17),
+        torch.randn(8, 17),
+        torch.randn(2, 17)
+    ]
     data_list = [Data(x_i, edge_index_i, edge_attr_i, y_i) for
                  (x_i, edge_index_i, edge_attr_i, y_i)
                  in zip(x, edge_index, edge_attr, y)]
@@ -225,6 +249,8 @@ def test_extension_collate_2():
                                          collate_type='edge_index', slicing=True)
         data_list[i].__set_tensor_attr__('uselessfeature', uselessfeature[i],
                                          collate_type='auto_collate', cat_dim=0, slicing=True)
+        data_list[i].__set_tensor_attr__('two_hop_neighbor_feature', two_hop_neighbor_feature[i],
+                                         collate_type='auto_collate', cat_dim=0, slicing=True, use_slice='two_hop_edge_index')
     g1 = Batch.from_data_list([data_list[0], data_list[1]])
     g2 = Batch.from_data_list([data_list[2], data_list[3]])
     batch: Batch = Batch.from_data_list([g1, g2])
@@ -237,7 +263,7 @@ def test_extension_collate_2():
                                  'require_slice_set', 'two_hop_edge_index',
                                  'two_hop_edge_index_slice0', 'two_hop_edge_index_slice1',
                                  'uselessfeature', 'uselessfeature_slice0',
-                                 'uselessfeature_slice1'}
+                                 'uselessfeature_slice1', 'borrow_slice_dict', 'two_hop_neighbor_feature'}
     assert batch.num_nodes == 21
     assert batch.num_edges == 48
     assert batch.num_node_features == 10
@@ -282,6 +308,8 @@ def test_extension_collate_2():
     torch.testing.assert_close(batch.uselessfeature_slice1, torch.tensor([
         0, 28
     ]), rtol=1e-9, atol=1e-9)
+    torch.testing.assert_close(batch.two_hop_neighbor_feature, torch.cat(two_hop_neighbor_feature),
+                               rtol=1e-9, atol=1e-9)
 
 
 def test_extension_separate_2():
@@ -329,6 +357,12 @@ def test_extension_separate_2():
         torch.randn(17, 15),
         torch.randn(18, 15)
     ]
+    two_hop_neighbor_feature = [
+        torch.ones((0, 17)),
+        torch.randn(12, 17),
+        torch.randn(8, 17),
+        torch.randn(2, 17)
+    ]
     data_list = [Data(x_i, edge_index_i, edge_attr_i, y_i) for
                  (x_i, edge_index_i, edge_attr_i, y_i)
                  in zip(x, edge_index, edge_attr, y)]
@@ -337,6 +371,8 @@ def test_extension_separate_2():
                                          collate_type='edge_index', slicing=True)
         data_list[i].__set_tensor_attr__('uselessfeature', uselessfeature[i],
                                          collate_type='auto_collate', cat_dim=0, slicing=True)
+        data_list[i].__set_tensor_attr__('two_hop_neighbor_feature', two_hop_neighbor_feature[i],
+                                         collate_type='auto_collate', cat_dim=0, slicing=True, use_slice='two_hop_edge_index')
     g1: Batch = Batch.from_data_list([data_list[0], data_list[1]])
     g2: Batch = Batch.from_data_list([data_list[2], data_list[3]])
     batch: Batch = Batch.from_data_list([g1, g2])
@@ -406,6 +442,12 @@ def test_extension_slicing():
         torch.randn(17, 15),
         torch.randn(18, 15)
     ]
+    two_hop_neighbor_feature = [
+        torch.ones((0, 17)),
+        torch.randn(12, 17),
+        torch.randn(8, 17),
+        torch.randn(2, 17)
+    ]
     data_list = [Data(x_i, edge_index_i, edge_attr_i, y_i) for
                  (x_i, edge_index_i, edge_attr_i, y_i)
                  in zip(x, edge_index, edge_attr, y)]
@@ -414,7 +456,8 @@ def test_extension_slicing():
                                          collate_type='edge_index', slicing=True)
         data_list[i].__set_tensor_attr__('uselessfeature', uselessfeature[i],
                                          collate_type='auto_collate', cat_dim=0, slicing=True)
-
+        data_list[i].__set_tensor_attr__('two_hop_neighbor_feature', two_hop_neighbor_feature[i],
+                                         collate_type='auto_collate', cat_dim=0, slicing=True, use_slice='two_hop_edge_index')
     batch: Batch = Batch.from_data_list(data_list)
     b1 = batch[1:]
     b2 = batch[:2]

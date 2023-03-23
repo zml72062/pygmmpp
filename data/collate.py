@@ -121,7 +121,7 @@ def collate(cls, data_list: List[Data]):
                 batch.__dict__[key][feature] = sum(
                     [data.__dict__[key][feature] for data in data_list]
                 )
-        elif '_set' in key:
+        elif '_set' in key or key == 'borrow_slice_dict':
             batch.__dict__[key] = copy.copy(data_sample.__dict__[key])
 
         # for non-tensor-type graph feature, maintain a list for them
