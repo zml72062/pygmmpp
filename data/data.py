@@ -61,7 +61,7 @@ class Data:
             v = self.__dict__[k]
             if isinstance(v, torch.Tensor):
                 feature_list.append('='.join((k, repr(list(v.shape)))))
-            elif k not in {'batch_level', 'inc_dict', 'cat_dim_dict'} \
+            elif k not in {'batch_level', 'inc_dict', 'cat_dim_dict', 'borrow_slice_dict'} \
                     and '_set' not in k:
                 feature_list.append('='.join((k, repr(v))))
         return self.__class__.__name__ + '(' + ', '.join(feature_list) + ')'

@@ -83,6 +83,3 @@ class CountDataset(Dataset):
         
             torch.save(Batch.from_data_list(split_data_list), 
                        osp.join(self.processed_dir, f'{split}.pt'))
-
-
-

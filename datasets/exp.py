@@ -35,9 +35,3 @@ class EXP(Dataset):
             data_list = [self.pre_transform(data) for data in data_list]
 
         torch.save(Batch.from_data_list(data_list), self.processed_paths[0])
-
-
-if __name__ == "__main__":
-    test_path = "../data/EXP/"
-    dataset = EXP(test_path)
-    print(dataset[0])
