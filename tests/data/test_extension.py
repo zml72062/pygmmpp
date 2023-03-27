@@ -515,3 +515,190 @@ def test_extension_slicing():
             torch.testing.assert_close(val1, val2)
         else:
             assert val1 == val2
+
+def test_extension_delete_1():
+    torch.manual_seed(412)
+    x = [
+        torch.randn(6, 10),
+        torch.randn(6, 10),
+        torch.randn(5, 10),
+        torch.randn(4, 10)
+    ]
+    edge_index = [
+        torch.tensor([[0, 1, 0, 2, 1, 2, 3, 4, 3, 5, 4, 5],
+                      [1, 0, 2, 0, 2, 1, 4, 3, 5, 3, 5, 4]], dtype=int),
+        torch.tensor([[0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 0, 3, 4, 1],
+                      [1, 0, 2, 1, 3, 2, 4, 3, 5, 4, 3, 0, 1, 4]], dtype=int),
+        torch.tensor([[0, 1, 1, 2, 2, 3, 3, 4, 4, 0, 0, 2],
+                      [1, 0, 2, 1, 3, 2, 4, 3, 0, 4, 2, 0]], dtype=int),
+        torch.tensor([[0, 1, 1, 2, 2, 3, 3, 0, 0, 2],
+                      [1, 0, 2, 1, 3, 2, 0, 3, 2, 0]], dtype=int)
+    ]
+    edge_attr = [
+        torch.randn(12, 7),
+        torch.randn(14, 7),
+        torch.randn(12, 7),
+        torch.randn(10, 7)
+    ]
+    y = [
+        torch.randn(1, 3),
+        torch.randn(1, 3),
+        torch.randn(1, 3),
+        torch.randn(1, 3)
+    ]
+    two_hop_neighbor = [
+        torch.ones((2, 0), dtype=int),
+        torch.tensor([[0, 2, 0, 4, 1, 3, 1, 5, 2, 4, 3, 5],
+                      [2, 0, 4, 0, 3, 1, 5, 1, 4, 2, 3, 5]], dtype=int),
+        torch.tensor([[0, 3, 1, 3, 1, 4, 2, 4],
+                      [3, 0, 3, 1, 4, 1, 4, 2]], dtype=int),
+        torch.tensor([[1, 3],
+                      [3, 1]], dtype=int)
+    ]
+    uselessfeature = [
+        torch.randn(13, 15),
+        torch.randn(15, 15),
+        torch.randn(17, 15),
+        torch.randn(18, 15)
+    ]
+    two_hop_neighbor_feature = [
+        torch.ones((0, 17)),
+        torch.randn(12, 17),
+        torch.randn(8, 17),
+        torch.randn(2, 17)
+    ]
+    data_list = [Data(x_i, edge_index_i, edge_attr_i, y_i) for
+                 (x_i, edge_index_i, edge_attr_i, y_i)
+                 in zip(x, edge_index, edge_attr, y)]
+    data_list2 = [Data(x_i, edge_index_i, edge_attr_i, y_i) for
+                 (x_i, edge_index_i, edge_attr_i, y_i)
+                 in zip(x, edge_index, edge_attr, y)]
+    for i in range(4):
+        data_list[i].__set_tensor_attr__('two_hop_edge_index', two_hop_neighbor[i],
+                                         collate_type='edge_index', slicing=True)    
+        data_list[i].__set_tensor_attr__('uselessfeature', uselessfeature[i],
+                                         collate_type='auto_collate', cat_dim=0, slicing=True)
+  
+    for i in range(4):
+        data_list2[i].__set_tensor_attr__('two_hop_edge_index', two_hop_neighbor[i],
+                                         collate_type='edge_index', slicing=True)
+        data_list2[i].__set_tensor_attr__('uselessfeature', uselessfeature[i],
+                                         collate_type='auto_collate', cat_dim=0, slicing=True)
+        data_list2[i].__set_tensor_attr__('two_hop_neighbor_feature', two_hop_neighbor_feature[i],
+                                         collate_type='auto_collate', cat_dim=0, slicing=True, use_slice='two_hop_edge_index')
+        data_list2[i].__del_tensor_attr__('two_hop_neighbor_feature')
+    
+    batch: Batch = Batch.from_data_list(data_list)
+    batch2: Batch = Batch.from_data_list(data_list2)
+    
+    for (b, g) in zip(data_list, data_list2):
+        assert b.keys() == g.keys()
+        for k in b:
+            val1 = b.__dict__[k]
+            val2 = g.__dict__[k]
+            if isinstance(val1, torch.Tensor):
+                torch.testing.assert_close(val1, val2)
+            else:
+                assert val1 == val2
+
+    assert batch.keys() == batch2.keys()
+    for k in batch:
+        val1 = batch.__dict__[k]
+        val2 = batch2.__dict__[k]
+        if isinstance(val1, torch.Tensor):
+            torch.testing.assert_close(val1, val2)
+        else:
+            assert val1 == val2
+
+def test_extension_delete_2():
+    torch.manual_seed(412)
+    x = [
+        torch.randn(6, 10),
+        torch.randn(6, 10),
+        torch.randn(5, 10),
+        torch.randn(4, 10)
+    ]
+    edge_index = [
+        torch.tensor([[0, 1, 0, 2, 1, 2, 3, 4, 3, 5, 4, 5],
+                      [1, 0, 2, 0, 2, 1, 4, 3, 5, 3, 5, 4]], dtype=int),
+        torch.tensor([[0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 0, 3, 4, 1],
+                      [1, 0, 2, 1, 3, 2, 4, 3, 5, 4, 3, 0, 1, 4]], dtype=int),
+        torch.tensor([[0, 1, 1, 2, 2, 3, 3, 4, 4, 0, 0, 2],
+                      [1, 0, 2, 1, 3, 2, 4, 3, 0, 4, 2, 0]], dtype=int),
+        torch.tensor([[0, 1, 1, 2, 2, 3, 3, 0, 0, 2],
+                      [1, 0, 2, 1, 3, 2, 0, 3, 2, 0]], dtype=int)
+    ]
+    edge_attr = [
+        torch.randn(12, 7),
+        torch.randn(14, 7),
+        torch.randn(12, 7),
+        torch.randn(10, 7)
+    ]
+    y = [
+        torch.randn(1, 3),
+        torch.randn(1, 3),
+        torch.randn(1, 3),
+        torch.randn(1, 3)
+    ]
+    two_hop_neighbor = [
+        torch.ones((2, 0), dtype=int),
+        torch.tensor([[0, 2, 0, 4, 1, 3, 1, 5, 2, 4, 3, 5],
+                      [2, 0, 4, 0, 3, 1, 5, 1, 4, 2, 3, 5]], dtype=int),
+        torch.tensor([[0, 3, 1, 3, 1, 4, 2, 4],
+                      [3, 0, 3, 1, 4, 1, 4, 2]], dtype=int),
+        torch.tensor([[1, 3],
+                      [3, 1]], dtype=int)
+    ]
+    uselessfeature = [
+        torch.randn(13, 15),
+        torch.randn(15, 15),
+        torch.randn(17, 15),
+        torch.randn(18, 15)
+    ]
+    two_hop_neighbor_feature = [
+        torch.ones((0, 17)),
+        torch.randn(12, 17),
+        torch.randn(8, 17),
+        torch.randn(2, 17)
+    ]
+    data_list = [Data(x_i, edge_index_i, edge_attr_i, y_i) for
+                 (x_i, edge_index_i, edge_attr_i, y_i)
+                 in zip(x, edge_index, edge_attr, y)]
+    data_list2 = [Data(x_i, edge_index_i, edge_attr_i, y_i) for
+                 (x_i, edge_index_i, edge_attr_i, y_i)
+                 in zip(x, edge_index, edge_attr, y)]
+    for i in range(4):
+        data_list[i].__set_tensor_attr__('two_hop_edge_index', two_hop_neighbor[i],
+                                         collate_type='edge_index', slicing=True)
+        data_list[i].__set_tensor_attr__('two_hop_neighbor_feature', two_hop_neighbor_feature[i],
+                                         collate_type='auto_collate', cat_dim=0, slicing=True, use_slice='two_hop_edge_index') 
+    for i in range(4):
+        data_list2[i].__set_tensor_attr__('two_hop_edge_index', two_hop_neighbor[i],
+                                         collate_type='edge_index', slicing=True)
+        data_list2[i].__set_tensor_attr__('uselessfeature', uselessfeature[i],
+                                         collate_type='auto_collate', cat_dim=0, slicing=True)
+        data_list2[i].__set_tensor_attr__('two_hop_neighbor_feature', two_hop_neighbor_feature[i],
+                                         collate_type='auto_collate', cat_dim=0, slicing=True, use_slice='two_hop_edge_index')
+        data_list2[i].__del_tensor_attr__('uselessfeature')
+    
+    batch: Batch = Batch.from_data_list(data_list)
+    batch2: Batch = Batch.from_data_list(data_list2)
+    
+    for (b, g) in zip(data_list, data_list2):
+        assert b.keys() == g.keys()
+        for k in b:
+            val1 = b.__dict__[k]
+            val2 = g.__dict__[k]
+            if isinstance(val1, torch.Tensor):
+                torch.testing.assert_close(val1, val2)
+            else:
+                assert val1 == val2
+
+    assert batch.keys() == batch2.keys()
+    for k in batch:
+        val1 = batch.__dict__[k]
+        val2 = batch2.__dict__[k]
+        if isinstance(val1, torch.Tensor):
+            torch.testing.assert_close(val1, val2)
+        else:
+            assert val1 == val2

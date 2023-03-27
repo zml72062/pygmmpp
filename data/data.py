@@ -237,3 +237,27 @@ class Data:
                 self.require_slice_set.add(name)
             else:
                 self.borrow_slice_dict[name] = use_slice
+    
+    def __del_tensor_attr__(self, name: str):
+        """
+        An extension to `__delattr__`, which automatically handles the deletion of
+        tensor features (e.g. deletion of slicing vectors).
+        """
+        self.node_feature_set.discard(name)
+        self.edge_index_set.discard(name)
+        self.edge_feature_set.discard(name)
+        self.graph_feature_set.discard(name)
+        self.require_slice_set.discard(name)
+        if name in self.borrow_slice_dict.keys():
+            del self.borrow_slice_dict[name]
+
+        keys = {key for key in self.__dict__ if key.startswith(name)}
+        for key in keys:
+            del self.cat_dim_dict[key]
+            del self.inc_dict[key]
+            del self.__dict__[key]
+        
+
+        
+        
+        
