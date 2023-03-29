@@ -121,7 +121,7 @@ class MessagePassing(torch.nn.Module):
 
         # execute aggregation
         aggr_out = torch_scatter.scatter(
-            messages, tgt, dim=0, reduce=self.aggr
+            messages, tgt, dim=0, reduce=self.aggr, dim_size=x.shape[0]
         )
 
         return self.update_(aggr_out, x, **kwargs)
