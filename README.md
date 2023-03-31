@@ -24,7 +24,9 @@ To make it easier to add new features into a graph, we introduced four special "
 
 We store the keys that belong to those four classes in four distinct sets, and treat each of the class specially when calling `collate()` or `separate()`.
 
-To conveniently add a new tensor-type feature to a `Data` object, we provide the `__set_tensor_attr__()` method, which is an extension to `__setattr__()`, by letting the caller decide whether the feature belongs to the above four "feature classes", or whether the feature needs auto-batching service. Moreover, this extension comes with little overhead which is negligible compared with the performance gain due to our simplified architecture of the framework.
+To conveniently add a new tensor-type feature to a `Data` object, we provide the `__set_tensor_attr__()` method, which is an extension to `__setattr__()`, by letting the caller decide whether the feature belongs to the above four "feature classes", or whether the feature needs auto-batching service. When it does need auto-batching, it is also up to the caller whether to create a slicing vector for the feature, or use an existing slicing vector. Moreover, this extension comes with little overhead which is negligible compared with the performance gain due to our simplified architecture of the framework. 
+
+Similarly, a `__del_tensor_attr__()` method is provided to remove such tensor-type features automatically. Therefore, the framework enables fast implementation of any novel preprocessing techniques, without researchers paying too much attention on the underlying storage details.
 
 ## `Batch` --- support for batching
 
@@ -47,7 +49,7 @@ The `torch_geometric` package processes the datasets and the batches differently
 
 ## `DataLoader` --- loading datasets
 
-The `DataLoader` uses the `torch.utils.data.DataLoader` class, and is a simple wrapper class. 
+The `DataLoader` uses the `torch.utils.data.DataLoader` class, and is a simple wrapper class. As an extension to the `torch_geometric.loader.DataLoader` class, our `DataLoader` allows passing a user-defined `collator` function as an argument, which overrides the default `collate` function.
 
 ## `MessagePassing` --- message-passing layers
 
