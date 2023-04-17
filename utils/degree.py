@@ -14,5 +14,4 @@ def degree(index: torch.LongTensor, num_nodes: int) -> torch.Tensor:
     computes in degree.
     """
     src = torch.ones(index.shape[0], dtype=int)
-    out = scatter_add(src, index)
-    return torch.cat([out, torch.zeros(num_nodes - out.shape[0], dtype=int)])
+    return scatter_add(src, index, dim_size=num_nodes)
