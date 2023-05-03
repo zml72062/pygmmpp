@@ -182,7 +182,11 @@ class OGBG(Dataset):
                         1, -1).to(torch.float32), 'graph_feature')
 
         if self.pre_transform is not None:
-            data_list = [self.pre_transform(data) for data in data_list]
+            print('Preprocessing...')
+            pre_transformed_data_list = []
+            for data in tqdm(data_list):
+                pre_transformed_data_list.append(self.pre_transform(data))
+            data_list = pre_transformed_data_list
 
         print('Saving...')
         torch.save(Batch.from_data_list(data_list), self.processed_paths[0])
