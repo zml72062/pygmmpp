@@ -3,14 +3,9 @@ neighbor.py - Extracts k-hop neighbor of a given node.
 """
 import torch
 
-
-def k_hop_neighbor(node_idx: int, num_hops: int, edge_index: torch.LongTensor,
-                   num_nodes: int) -> torch.BoolTensor:
-    """
-    Extracts up to k-hop shortest path distance neighbor of a given node.
-
-    Returns a k-row mask tensor that selects nodes at each hop.
-    """
+def _k_hop_neighbor(node_idx: int, num_hops: int, 
+                    edge_index: torch.LongTensor,
+                    num_nodes: int) -> torch.BoolTensor:
     device = edge_index.device
     row, col = edge_index
 
@@ -27,7 +22,26 @@ def k_hop_neighbor(node_idx: int, num_hops: int, edge_index: torch.LongTensor,
         edge_mask = node_mask[hop][row]
         subsets = col[edge_mask]
 
-    return torch.diff(node_mask, dim=0)
+    return node_mask
+
+def up_to_k_hop_neighbor(node_idx: int, num_hops: int, 
+                         edge_index: torch.LongTensor,
+                         num_nodes: int) -> torch.BoolTensor:
+    """
+    Returns a mask tensor that selects nodes within k-hops of a given node.
+    """
+    return _k_hop_neighbor(node_idx, num_hops, edge_index, num_nodes)[-1]
+    
+
+def k_hop_neighbor(node_idx: int, num_hops: int, edge_index: torch.LongTensor,
+                   num_nodes: int) -> torch.BoolTensor:
+    """
+    Extracts up to k-hop shortest path distance neighbor of a given node.
+
+    Returns a k-row mask tensor that selects nodes at each hop.
+    """
+    return torch.diff(_k_hop_neighbor(node_idx, num_hops, edge_index, num_nodes), 
+                      dim=0)
 
 
 def k_hop_edge_index(num_hops: int, edge_index: torch.LongTensor, num_nodes: int):
